@@ -23,10 +23,9 @@ Install the NBA folder. Then, in R, run the file app.R .
 https://yukang.shinyapps.io/NBA_2015_2024/
 
 ## Authors and acknowledgment
-Filipe Carvalho, D00261751
 Yu Kang, D00262134
 
-Professor: Andrew Shaw
+Professor: Jack Mcdonnell
 
 ## Project status
 Finished
