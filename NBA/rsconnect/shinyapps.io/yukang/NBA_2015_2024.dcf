@@ -1,0 +1,12 @@
+name: NBA_2015_2024
+title: NBA_2015_2024
+username: yukang
+account: yukang
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13601308
+bundleId: 9523521
+url: https://yukang.shinyapps.io/NBA_2015_2024/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

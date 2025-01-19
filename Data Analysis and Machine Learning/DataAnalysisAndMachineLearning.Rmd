@@ -1,0 +1,300 @@
+---
+title: "Data Analysis and Machine Learning"
+output: html_document
+
+---
+
+## Loading Dataset
+
+Here, we are going to look at the dataset "players.csv", which contains the per game stats of a players from the last 10 seasons, ie. from 2014-15 season to 2023-24 season.
+
+```{r}
+players <- read.csv("players.csv")
+str(players)
+```
+Dataset has 6070 rows, and 31 columns.
+
+Data types:
+
+* Season: ordinal categorical variable
+* Team: nominal categorical variable
+* Player: nominal categorical variable
+* Age: continuous numerical variable
+* Position: nominal categorical variable
+* Games: continuous numerical data
+* Games_Started: continuous numerical data
+* Minutes_Played: continuous numerical data
+* Field_Goals: continuous numerical data
+* Field_Goal_Attempts: continuous numerical data
+* Field_Goal_Percentage: continuous numerical data
+* Three_Point_Field_Goals: continuous numerical data
+* Three_Point_Field_Goal_Attempts: continuous numerical data
+* Three_Point_Field_Goal_Percentage: continuous numerical data
+* Two_Point_Field_Goals: continuous numerical data
+* Two_Point_Field_Goal_Attempts: continuous numerical data
+* Two_Point_Field_Goal_Percentage: continuous numerical data
+* Effective_Field_Goal_Percentage: continuous numerical data
+* Free_Throws: continuous numerical data
+* Free_Throw_Attempts: continuous numerical data
+* Free_Throw_Percentage: continuous numerical data
+* Offensive_Rebounds: continuous numerical data
+* Defensive_Rebounds: continuous numerical data
+* Total_Rebounds: continuous numerical data
+* Assists: continuous numerical data
+* Steals: continuous numerical data
+* Blocks: continuous numerical data
+* Turnovers: continuous numerical data
+* Personal_Fouls: continuous numerical data
+* Points: continuous numerical data
+* All_Star: nominal categorical data
+
+Since some players played for more than one team in a season, they appear multiple times in the dataset with same Season but different Team. Therefore, we group together the players that played for more than one team in a season.
+
+```{r}
+library(dplyr)
+players <- players %>%
+  group_by(Season, Player, Age, All_Star) %>%
+  summarise(
+    Team = paste(Team, collapse = ", "),
+    Position = ifelse(n_distinct(Position) > 1, paste(unique(Position), collapse = ", "), unique(Position)),
+    Games_Started = sum(Games_Started),
+    Minutes_Played = round(sum(Minutes_Played * Games) / sum(Games), 1),
+    Field_Goals = round(sum(Field_Goals * Games) / sum(Games), 1),
+    Field_Goal_Attempts = round(sum(Field_Goal_Attempts * Games) / sum(Games), 1),
+    Field_Goal_Percentage = round(sum(Field_Goal_Percentage * Games) / sum(Games), 3),
+    Three_Point_Field_Goals = round(sum(Three_Point_Field_Goals * Games) / sum(Games), 1),
+    Three_Point_Field_Goal_Attempts = round(sum(Three_Point_Field_Goal_Attempts * Games) / sum(Games), 1),
+    Three_Point_Field_Goal_Percentage = round(sum(Three_Point_Field_Goal_Percentage * Games) / sum(Games), 3),
+    Two_Point_Field_Goals = round(sum(Two_Point_Field_Goals * Games) / sum(Games), 1),
+    Two_Point_Field_Goal_Attempts = round(sum(Two_Point_Field_Goal_Attempts * Games) / sum(Games), 1),
+    Two_Point_Field_Goal_Percentage = round(sum(Two_Point_Field_Goal_Percentage * Games) / sum(Games), 3),
+    Effective_Field_Goal_Percentage = round(sum(Effective_Field_Goal_Percentage * Games) / sum(Games), 3),
+    Free_Throws = round(sum(Free_Throws * Games) / sum(Games), 1),
+    Free_Throw_Attempts = round(sum(Free_Throw_Attempts * Games) / sum(Games), 1),
+    Free_Throw_Percentage = round(sum(Free_Throw_Percentage * Games) / sum(Games), 3),
+    Offensive_Rebounds = round(sum(Offensive_Rebounds * Games) / sum(Games), 1),
+    Defensive_Rebounds = round(sum(Defensive_Rebounds * Games) / sum(Games), 1),
+    Total_Rebounds = round(sum(Total_Rebounds * Games) / sum(Games), 1),
+    Assists = round(sum(Assists * Games) / sum(Games), 1),
+    Steals = round(sum(Steals * Games) / sum(Games), 1),
+    Blocks = round(sum(Blocks * Games) / sum(Games), 1),
+    Turnovers = round(sum(Turnovers * Games) / sum(Games), 1),
+    Personal_Fouls = round(sum(Personal_Fouls * Games) / sum(Games), 1),
+    Points = round(sum(Points * Games) / sum(Games), 1),
+    Games = sum(Games),
+    .groups = "drop"
+  )
+```
+
+```{r}
+str(players)
+```
+
+Now, we can see the rows reduced to 5309.
+
+## Exploratory Data Analysis
+
+In this project, we will focus on whether all-star players have better stats overall as compared to non all-star players. We will also try to predict whether a player has all-star level production based on their stats.
+
+Therefore, the dependent variable is All_Star.
+
+The research question is: Given a players stats per game, will the player will make the all-star team?
+
+```{r}
+plot(Field_Goals ~ Field_Goal_Attempts, col = All_Star + 1, data = players)
+legend("topright", legend = unique(players$All_Star), col = unique(players$All_Star) + 1, pch = 1)
+```
+
+There is a strong positive relationship between Field_Goal_Attempts and Field_Goals. As players attempt more field goals per game, more field goals per game are made. All-star players generally attempt and make more field goals per game than non all-star players.
+
+```{r}
+plot(Three_Point_Field_Goals ~ Three_Point_Field_Goal_Attempts, col = All_Star + 1, data = players)
+legend("topright", legend = unique(players$All_Star), col = unique(players$All_Star) + 1, pch = 1)
+```
+
+There is a strong positive relationship between Three_Point_Field_Goal_Attempts and Three_Point_Field_Goals. As players attempt more three pointers per game, more three pointers per game are made. All-star players generally attempt and make more three pointers per game than non all-star players.
+
+```{r}
+plot(Two_Point_Field_Goals ~ Two_Point_Field_Goal_Attempts, col = All_Star + 1, data = players)
+legend("topright", legend = unique(players$All_Star), col = unique(players$All_Star) + 1, pch = 1)
+```
+
+There is a strong positive relationship between Two_Point_Field_Goal_Attempts and Two_Point_Field_Goals. As players attempt more two pointers per game, more two pointers per game are made. All-star players generally attempt and make more two pointers per game than non all-star players.
+
+```{r}
+plot(Free_Throws ~ Free_Throw_Attempts, col = All_Star + 1, data = players)
+legend("topright", legend = unique(players$All_Star), col = unique(players$All_Star) + 1, pch = 1)
+```
+
+There is a strong positive relationship between Free_Throw_Attempts and Free_Throws. As players attempt more free throws per game, more free throws per game are made. All-star players generally attempt and make more free throws per game than non all-star players.
+
+```{r}
+boxplot(Offensive_Rebounds ~ All_Star, data = players)
+```
+
+All-star players have more offensive rebounds per game as compared to non all-star players.
+
+```{r}
+boxplot(Defensive_Rebounds ~ All_Star, data = players)
+```
+
+All-star players have more defensive rebounds per game as compared to non all-star players.
+
+```{r}
+boxplot(Assists ~ All_Star, data = players)
+```
+
+All-star players have more assists per game as compared to non all-star players.
+
+```{r}
+boxplot(Steals ~ All_Star, data = players)
+```
+
+All-star players have more steals per game as compared to non all-star players.
+
+```{r}
+boxplot(Blocks ~ All_Star, data = players)
+```
+All-star players have more blocks per game as compared to non all-star players.
+
+```{r}
+boxplot(Turnovers ~ All_Star, data = players)
+```
+
+All-star players have more turnovers per game as compared to non all-star players.
+
+```{r}
+boxplot(Points ~ All_Star, data = players)
+```
+
+All-star players have more points per game as compared to non all-star players.
+
+In conclusion, all-star players generally perform better in every stats as compared to non all-star players.
+
+## Machine Learning
+
+Now, for machine learning, we first remove variables that are not relevant in predicting whether a player will make the all-star team, and also variables that might have multicollinearity.
+
+```{r}
+players2 <- subset(players, select = -c(Season, Player, Age, Team, Position, Games, Games_Started, Minutes_Played, Field_Goals, Field_Goal_Attempts, Field_Goal_Percentage, Three_Point_Field_Goal_Attempts, Two_Point_Field_Goal_Attempts, Free_Throw_Attempts, Effective_Field_Goal_Percentage, Total_Rebounds, Personal_Fouls, Points))
+```
+
+Reasons for removing the columns:
+
+* Season, Player, Age, Team, Games, Games_Started, Minutes_Played, Personal_Fouls: Not relevant in predicting whether a player will make the all-star team
+
+* Field_Goals: Might have multicollinearity with Three_Point_Field_Goals and Two_Point_Field_Goals as Field_Goals = Three_Point_Field_Goals + Two_Point_Field_Goals
+
+* Field_Goal_Attempts: Might have multicollinearity with Three_Point_Field_Goal_Attempt and Two_Point_Field_Goal_Attempt as Field_Goals = Three_Point_Field_Goal_Attempt + Two_Point_Field_Goal_Attempt
+
+* Field_Goal_Percentage: Might have multicollinearity with Three_Point_Field_Goal_Percentage and Two_Point_Field_Goal_Percentage
+
+* Three_Point_Field_Goal_Attempts: Might have multicollinearity with Three_Point_Field_Goals and Three_Point_Field_Goal_Percentage as Three_Point_Field_Goal_Percentage = Three_Point_Field_Goals/Three_Point_Field_Goal_Attempts
+
+* Two_Point_Field_Goal_Attempts: Might have multicollinearity with Two_Point_Field_Goals and Two_Point_Field_Goal_Percentage as Two_Point_Field_Goal_Percentage = Two_Point_Field_Goals/Two_Point_Field_Goal_Attempts
+
+* Free_Throw_Attempts: Might have multicollinearity with Free_Throws and Free_Throw_Percentage as Free_Throw_Percentage = Free_Throws/Free_Throw_Attempts
+
+* Effective_Field_Goal_Percentage: Might have multicollinearity with Two_Point_Field_Goals, Three_Point_Field_Goals and Field_Goal_Attempts as Effective_Field_Goal_Percentage = (Two_Point_Field_Goals + 1.5 * Three_Point_Field_Goals)/Field_Goal_Attempts
+
+* Points: Might have multicollinearity with Two_Point_Field_Goals, Three_Point_Field_Goals and Free_Throws as Points = Two_Point_Field_Goals * 2 + Three_Point_Field_Goals * 3 +  Free Throws
+
+Next, we split the dataset into train and test sets. (80% and 20%)
+
+```{r}
+train <- players2[1:4247,]
+test <- players2[4248:5309,]
+```
+
+And we choose the model. Since the dependent variable (All_Star) is a categorical variable, and the output is binary (0 or 1), logistic regression is a good model for predicting whether a player will make the all-star team.
+
+```{r}
+model <- glm(All_Star ~ Three_Point_Field_Goals + 
+             Three_Point_Field_Goal_Percentage + Two_Point_Field_Goals + 
+             Two_Point_Field_Goal_Percentage + Free_Throws + Free_Throw_Percentage + 
+             Offensive_Rebounds + Defensive_Rebounds + Assists + Steals + Blocks + 
+             Turnovers, 
+             family=binomial(link='logit'),data=train)
+
+summary(model)
+```
+
+Based on the summary, Three_Point_Field_Goal_Percentage, Two_Point_Field_Goal_Percentage, Free_Throw_Percentage, Offensive_Rebounds are not significant, therefore we can remove them.
+
+```{r}
+players3 <- subset(players, select = -c(Season, Player, Age, Team, Position, Games, Games_Started, Minutes_Played, Field_Goals, Field_Goal_Attempts, Field_Goal_Percentage, Three_Point_Field_Goal_Attempts, Three_Point_Field_Goal_Percentage, Two_Point_Field_Goal_Attempts, Two_Point_Field_Goal_Percentage, Free_Throw_Attempts, Free_Throw_Percentage, Effective_Field_Goal_Percentage, Total_Rebounds, Offensive_Rebounds, Personal_Fouls, Points))
+
+train2 <- players3[1:4247,]
+test2 <- players3[4248:5309,]
+
+model2 <- glm(All_Star ~ Three_Point_Field_Goals + Two_Point_Field_Goals + Free_Throws + 
+              Defensive_Rebounds + Assists + Steals + Blocks + Turnovers,
+              family=binomial(link='logit'),data=train)
+
+summary(model2)
+```
+
+Now, every variables are significant.
+
+```{r}
+library(car)
+vif(model2)
+```
+
+After checking VIF, there is no multicollinearity.
+
+Now, we evaluate the model.
+
+```{r}
+fitted.results <- predict(model2,newdata=subset(test2,select=c(2:9)),type='response')
+fitted.results <- ifelse(fitted.results > 0.5,1,0)
+
+misClasificError <- mean(fitted.results != test2$All_Star)
+print(paste('Accuracy',1-misClasificError))
+```
+
+The model has high accuracy, which is good.
+
+```{r}
+library(caret)
+confusionMatrix <- confusionMatrix(factor(fitted.results), factor(test2$All_Star))
+print(confusionMatrix)
+```
+
+```{r}
+precision <- confusionMatrix$byClass["Precision"]
+recall <- confusionMatrix$byClass["Recall"]
+f1_score <- 2 * ((precision * recall) / (precision + recall))
+print(paste("Precision:", precision))
+print(paste("Recall:", recall))
+print(paste("F1 Score:", f1_score))
+```
+The model also has pretty high F1 score, which is also good.
+
+```{r}
+fitted.probabilities <- predict(model2, newdata=subset(test2, select=c(2:9)), type='response')
+actual <- test2$All_Star
+predicted <- fitted.probabilities
+
+log_loss <- -mean(actual * log(predicted) + (1 - actual) * log(1 - predicted))
+print(paste("Log-Loss:", log_loss))
+```
+
+Moreover, the model has low log loss. 
+
+In conclusion, the model has a accuracy of 0.977401129943503, F1 score of 0.988059701492537, and log loss of 0.0593680302585804. It is a good model because it has high accuracy and F1 score, while having low log loss.
+
+Now, we try to predict whether a player makes the all-star team. Below is the stats of Michael Jordan in 1988, and he did made the all-star team during that season. Let's see if our model can correctly predict.
+```{r}
+new_data <- data.frame(
+  Three_Point_Field_Goals = 0.1,
+  Two_Point_Field_Goals = 13.0,
+  Free_Throws = 8.8,
+  Defensive_Rebounds = 3.8,
+  Assists = 5.9,
+  Steals = 3.2,
+  Blocks = 1.6,
+  Turnovers = 3.1
+)
+ifelse(predict(model2,newdata=new_data,type='response') > 0.5, "Yes", "No")
+```
